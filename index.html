@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.cdnfonts.com/css/RalstedaRegular" rel="stylesheet">
+    <title>Le'Ciel 24 Timer</title>
+    <style>
+        @font-face {
+            font-family: 'RalstedaRegular';
+            src: url('assets/fonts/RalstedaRegular-4Bqy9.otf') format('opentype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            width: 100%;
+            font-family: 'Arial', sans-serif;
+            scroll-behavior: smooth;
+            overflow-x: hidden;
+        }
+
+        /* Background and overall styling */
+        .background-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden; /* Hide any overflow from the video */
+        }
+
+        .background-video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1; /* Lowest to make sure it's under all other content */
+            filter: brightness(1.5) contrast(1.2);
+        }
+
+        .foreground {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            z-index: 2; /* Just above video */
+        }
+
+        /* Heading styles */
+        .heading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-family: 'RalstedaRegular';
+            text-align: center;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0);
+            z-index: 3; /* Above foreground, below nav */
+        }
+
+        .heading h1 {
+            font-size: 5rem;
+            letter-spacing: 12px;
+        }
+
+        .heading p {
+            font-size: 2rem;
+            margin-top: 1rem;
+        }
+
+        .heading a {
+            color: #ffb400;
+            text-decoration: none;
+            font-size: 1.2rem;
+            margin-top: 10px;
+            display: inline-block;
+            font-family: 'Big Shoulders Display', sans-serif;
+            letter-spacing: 12px;
+        }
+
+        /* Desktop navbar styling */
+        nav {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 4; /* Above everything except the cinematic logo */
+            font-family: 'Big Shoulders Display', sans-serif;
+            font-weight: 400;
+        }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: color 0.3s ease;
+        }
+
+        /* Hamburger Menu */
+        .hamburger {
+            display: none;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            cursor: pointer;
+            z-index: 99999; /* Higher for clickable */
+            font-family: 'Big Shoulders Display', sans-serif;
+        }
+
+        .hamburger div {
+            width: 30px;
+            height: 4px;
+            background-color: white;
+            margin: 6px 0;
+        }
+
+        /* Mobile Menu Hidden */
+        .nav-links-mobile {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw; /* Explicitly set to viewport width */
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.9);
+            text-align: center;
+            display: none;
+            flex-direction: column;
+            gap: 20px;
+            justify-content: center;
+            z-index: 6; /* Highest when opened */
+            backdrop-filter: blur(15px);
+        }
+
+        .nav-links-mobile a {
+            color: white;
+            font-size: 1.5rem;
+            text-decoration: none;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover, .nav-links-mobile a:hover {
+            color: #CA6702;
+        }
+
+        /* Responsive for mobile */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hamburger {
+                display: block;
+            }
+        }
+
+        /* Enable scrolling */
+        body {
+            overflow-y: auto;
+        }
+
+        /* Cinematic Logo Styles */
+        .cinematic-logo {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: rgba(0, 0, 0, 1);
+            backdrop-filter: blur(15px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 7; /* Highest priority */
+            color: white;
+            font-family: 'RalstedaRegular', sans-serif;
+            font-size: 10vw;
+            opacity: 1;
+        }
+
+        .fade-out {
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+
+        /* Content Section */
+        section {
+            padding: 100px 20px;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            text-align: center;
+        }
+
+        /* About Us Section */
+        #about {
+            height: auto;
+        }
+
+        h2 {
+            font-family: 'Big Shoulders Display',sans-serif;
+            font-size: 3rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
+        }
+
+        p {
+            font-family: 'Big Shoulders Display', sans-serif;
+            font-size: 1.5rem;
+            line-height: 1.6;
+            color: #f0f0f0;
+            margin-bottom: 20px;
+        }
+
+        /* Add a class to disable scrolling when the mobile menu is open */
+        .no-scroll {
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Cinematic Logo -->
+    <div class="cinematic-logo" id="cinematic-logo">
+        <h1>Le Ciel</h1>
+    </div>
+
+    <!-- Background Container -->
+    <div class="background-container">
+        <video class="background-video" autoplay muted loop>
+            <source src="assets/video/vid_bg_home.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+
+    <!-- Foreground Container -->
+    <div class="foreground">
+        <!-- Heading Content -->
+        <div class="heading">
+            <h1>Le Ciel</h1>
+            <p>Experience the sky-high thrill</p>
+            <a href="#about">Learn More</a>
+        </div>
+
+        <!-- Navigation -->
+        <nav>
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#about">About Le'Ciel</a></li>
+                <li><a href="#gallery">Gallery</a></li>
+                <li><a href="#sponsors">Our Sponsors</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </nav>
+
+        <!-- Hamburger Menu for mobile -->
+        <div class="hamburger" id="hamburger">
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+
+        <!-- Mobile Navigation Menu -->
+        <div class="nav-links-mobile" id="mobileNav">
+            <a href="#home">Home</a>
+            <a href="#about">About Le'Ciel</a>
+            <a href="#gallery">Gallery</a>
+            <a href="#sponsors">Our Sponsors</a>
+            <a href="#contact">Contact</a>
+        </div>
+    </div>
+
+    <!-- About Us Section -->
+    <section id="about">
+        <div>
+            <h2>About Le'Ciel 24 Timer</h2>
+            <p>The ultimate sky-high racing experience, spanning 24 thrilling hours!</p>
+        </div>
+    </section>
+
+    <section id="gallery">
+        <h2>Gallery</h2>
+        <p>Explore stunning visuals from past events.</p>
+    </section>
+
+    <section id="sponsors">
+        <h2>Our Sponsors</h2>
+        <p>Thanks to our sponsors who make it all possible.</p>
+    </section>
+
+    <section id="contact">
+        <h2>Contact Us</h2>
+        <p>Get in touch for more information about the event.</p>
+    </section>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.6.0/gsap.min.js"></script>
+    <script>
+        // Hamburger Menu Toggle with Blurred Background
+        const hamburger = document.querySelector(".hamburger");
+        const mobileMenu = document.querySelector(".nav-links-mobile");
+        const foreground = document.querySelector(".foreground");
+
+        hamburger.addEventListener("click", () => {
+            const isMenuOpen = mobileMenu.style.display === "flex";
+            if (!isMenuOpen) {
+                gsap.fromTo(mobileMenu, { y: '100%' }, { y: '0%', duration: 0.5 });
+                mobileMenu.style.display = 'flex';
+                document.body.classList.add("no-scroll"); // Disable scrolling
+                foreground.classList.add("blurred-bg");
+            } else {
+                gsap.fromTo(mobileMenu, { y: '0%' }, { y: '100%', duration: 0.5, onComplete: () => {
+                    mobileMenu.style.display = 'none';
+                    document.body.classList.remove("no-scroll"); // Re-enable scrolling
+                }});
+                foreground.classList.remove("blurred-bg");
+            }
+        });
+
+// Function to handle link clicks
+const handleLinkClick = () => {
+    gsap.fromTo(mobileMenu, 
+        { y: '0%' }, 
+        { 
+            y: '100%', 
+            duration: 0.5, 
+            onComplete: () => {
+                mobileMenu.style.display = 'none';
+                document.body.classList.remove("no-scroll"); // Re-enable scrolling
+            }
+        }
+    );
+    foreground.classList.remove("blurred-bg");
+};
+
+// Add event listeners to each link
+const links = mobileMenu.querySelectorAll('a');
+links.forEach(link => {
+    link.addEventListener('click', handleLinkClick);
+});
+
+        
+
+        // Fade Out Cinematic Logo on load
+        window.addEventListener("load", () => {
+            const logo = document.getElementById('cinematic-logo');
+            setTimeout(() => {
+                logo.classList.add('fade-out');
+                setTimeout(() => logo.style.display = 'none', 1000); // Remove after fade
+            }, 3000); // Wait 3 seconds before fading out
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('cinematic-logo').click();
+    const audio = new Audio('assets/music/bgm.mp3');
+    audio.loop = true; // Set audio to loop
+    audio.volume = 0.2; // Set the volume to 10%
+    function startAudio() {
+    audio.play().then(() => {
+      console.log('Audio started successfully.');
+    }).catch((error) => {
+      console.log('Audio playback failed:', error);
+    });
+    // Remove the event listener after first interaction
+    window.removeEventListener('click', startAudio);
+  }
+
+  // Wait for the user to interact (click) to start the audio
+  window.addEventListener('click', startAudio);
+
+
+    const hoverSound = new Audio('assets/music/cursor_hover.wav');
+    hoverSound.volume = 0.3; // Set the volume to 10%
+    
+    // Function to play the hover sound
+    function playHoverSound() {
+        hoverSound.currentTime = 0; // Reset the sound to the start
+        hoverSound.play(); // Play the sound
+    }
+
+    const navLinks = document.querySelectorAll('.nav-links a, .nav-links-mobile a');
+
+    navLinks.forEach(link => {
+        link.addEventListener('mouseover', playHoverSound);
+    });
+
+});
+    </script>
+</body>
+</html>
